@@ -67,12 +67,6 @@ class UsernameCountView(View):
 
 
 
-class MobileCountView(View):
-    '''判断手机号已注册'''
-    def get(self,request,mobile):
-        '''查询当前用户名的个数 要么0要么1'''
-        count = User.objects.filter(mobile=mobile).count()
-        return http.JsonResponse({'count': count,'code': RETCODE.OK, 'errmsg': 'OK'})
 
 
 
