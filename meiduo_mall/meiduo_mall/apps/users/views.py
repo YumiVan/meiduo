@@ -65,7 +65,7 @@ class UsernameCountView(View):
         count = User.objects.filter(username=username).count()
         return http.JsonResponse({'count': count,'code': RETCODE.OK, 'errmsg': 'OK'})
 
-
+ 
 
 
 
