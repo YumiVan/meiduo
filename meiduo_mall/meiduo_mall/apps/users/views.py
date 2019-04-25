@@ -5,7 +5,7 @@ import re
 from django.contrib.auth import login,logout
 from django.db import DatabaseError
 from meiduo_mall.utils.response_code import RETCODE
-
+from django_redis import get_redis_connection
 from .models import User
 import logging
 
@@ -40,7 +40,12 @@ class RegisterView(View):
             return http.HttpResponseForbidden('两次密码不一致')
         if not re.match(r'^1[345789]\d{9}$',mobile):
             return http.HttpResponseForbidden('请输入正确的手机号格式')
-        # TODO 短信验证码校验后期补充
+         # 短信验证码校验后期补充
+        redis_coon = get_redis_connection('verify_code')
+        sms_code_server = redis_coon.get('sms_%s' % mobile)  # 获取redis中的短信验证码
+
+        if sms_code_server is None or sms_code != sms_code_server.decode():
+            return http.HttpResponseForbidden('短信验证码有误')
 
         # 创建一个user
         try:
@@ -73,6 +78,7 @@ class MobileCountView(View):
         '''查询当前用户名的个数 要么0要么1'''
         count = User.objects.filter(mobile=mobile).count()
         return http.JsonResponse({'count': count,'code': RETCODE.OK, 'errmsg': 'OK'})
+
 
 
 
