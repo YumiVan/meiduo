@@ -1,21 +1,18 @@
-<<<<<<< HEAD
-from django.shortcuts import render, redirect,reverse
-from django.views import View
-from django import http
-from django.contrib.auth import login, logout, authenticate,mixins
-=======
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, reverse
 from django.views import View
 from django import http
 import re
-from django.contrib.auth import login, logout
->>>>>>> origin/master
+from django.contrib.auth import login, authenticate, logout, mixins
 from django.db import DatabaseError
-from meiduo_mall.utils.response_code import RETCODE
 from django_redis import get_redis_connection
+from django.conf import settings
+
 from .models import User
 import logging
-import re
+from meiduo_mall.utils.response_code import RETCODE
+from django.contrib.auth.decorators import login_required
+
+
 
 logger = logging.getLogger('django')  # 创建日志输出器
 
@@ -41,7 +38,7 @@ class RegisterView(View):
             return http.HttpResponseForbidden('缺少必传参数')
 
         if not re.match(r'^[a-zA-Z0-9_-]{5,20}$', username):
-            return http.HttpResponseForbidden('请输入8-20个字符的用户名')
+            return http.HttpResponseForbidden('请输入5-20个字符的用户名')
         if not re.match(r'^[0-9A-Za-z]{8,20}$', password):
             return http.HttpResponseForbidden('请输入8-20位的密码')
         if password2 != password:
@@ -65,7 +62,7 @@ class RegisterView(View):
         except DatabaseError as e:
             logger.error(e)
             return render(request, 'register.html', {'register_errmsg': '用户注册失败'})
-<<<<<<< HEAD
+
 
         # 状态保持
         login(request, user)  #
@@ -75,13 +72,13 @@ class RegisterView(View):
         # 响应结果重定向到首页
         return response
 
-=======
+
 
         # 状态保持
         login(request, user)  #
         # 注册成功重定向到首页
         return redirect('/')
->>>>>>> origin/master
+
 
 
 class UsernameCountView(View):
@@ -94,7 +91,7 @@ class UsernameCountView(View):
 
 
 class MobileCountView(View):
-<<<<<<< HEAD
+
     '''判断手机号已注册'''
 
     def get(self, request, mobile):
@@ -169,11 +166,8 @@ class UserInfoView(mixins.LoginRequiredMixin,View):
         #     return redirect('/login/?next=/info/')
 
         return render(requeset, 'user_center_info.html')
-=======
-    '''判断用户名已注册'''
 
-    def get(self, request, mobile):
-        '''查询当前用户名的个数 要么0要么1'''git
-        count = User.objects.filter(mobile=mobile).count()
-        return http.JsonResponse({'count': count, 'code': RETCODE.OK, 'errmsg': 'OK'})
->>>>>>> origin/master
+
+
+
+
