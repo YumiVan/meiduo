@@ -1,11 +1,10 @@
-from django.shortcuts import render
 from django.views import View
 from django_redis import get_redis_connection
 from django import http
 from meiduo_mall.utils.response_code import RETCODE
 from meiduo_mall.libs.captcha.captcha import captcha
 from random import randint
-from meiduo_mall.libs.yuntongxun.sms import CCP
+from celery_tasks.sms.tasks import send_sms_code
 from . import constants
 import logging
 logger = logging.getLogger('django')
@@ -61,16 +60,17 @@ class SMSCodeView(View):
         pl = redis_conn.pipeline()
         # 将生成好的短信验证码也存储到redis,以备后期校验
         pl.setex('sms_%s' % mobile, constants.SMS_CODE_REDIS_EXPRIE, sms_code)
-        # 手机号发过短信后在redis中存储一个标记
 
+        # 手机号发过短信后在redis中存储一个标记
         pl.setex('send_flag_%s' % mobile, 60, 1)
         # 执行管道
         pl.execute()
 
-
+        # 由生产者往经纪人里面存一个任务
+        send_sms_code.delay(mobile,sms_code)
         # 使用容联云SDK发短信
 
-        CCP().send_template_sms(mobile,[sms_code,constants.SMS_CODE_REDIS_EXPRIE // 60],constants.SEND_SMS_TEMPLATE_ID)
+        # CCP().send_template_sms(mobile,[sms_code,constants.SMS_CODE_REDIS_EXPRIE // 60],constants.SEND_SMS_TEMPLATE_ID)
         #响应
         return http.JsonResponse({'code':RETCODE.OK,'errmsg':'发送短信成功'})
 
