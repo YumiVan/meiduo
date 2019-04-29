@@ -128,7 +128,7 @@ class LoginView(View):
         if remembered != 'on':  # 没有勾选记住登录
             request.session.set_expiry(0)
 
-        # 状态保持
+        # 状态保持!
         login(request, user)
 
         response = redirect(request.GET.get('next') or '/' )#创建响应对象

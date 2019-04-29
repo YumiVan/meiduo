@@ -1,8 +1,6 @@
-
-
-
 from celery import Celery
 # celery -A celery_tasks.main worker -l info   启动命令
+
 # 1.创建celery实例对象
 celery_app = Celery('meiduo')
 
