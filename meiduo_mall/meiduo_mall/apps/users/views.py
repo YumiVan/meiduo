@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, reverse
 from django.views import View
 from django import http
-import re
+import re ,json
 from django.contrib.auth import login, authenticate, logout, mixins
 from django.db import DatabaseError
 from django_redis import get_redis_connection
@@ -78,7 +78,6 @@ class RegisterView(View):
         login(request, user)  #
         # 注册成功重定向到首页
         return redirect('/')
-
 
 
 class UsernameCountView(View):
@@ -168,6 +167,39 @@ class UserInfoView(mixins.LoginRequiredMixin,View):
         return render(requeset, 'user_center_info.html')
 
 
+class EmailView(mixins.LoginRequiredMixin, View):
+    """添加用户邮箱"""
 
+    def put(self, request):
+
+        # 接收请求体email数据
+        json_dict = json.loads(request.body.decode())
+        email = json_dict.get('email')
+
+        # 校验
+        if all([email]) is None:
+            return http.HttpResponseForbidden('缺少邮箱数据')
+
+        if not re.match(r'^[a-z0-9][\w\.\-]*@[a-z0-9\-]+(\.[a-z]{2,5}){1,2}$', email):
+            return http.HttpResponseForbidden('邮箱格式有误')
+
+
+        # 获取到user
+        user = request.user
+        # 设置user.email字段
+        user.email = email
+        # 调用save保存
+        user.save()
+
+        # 在此地还要发送一个邮件到email
+        # from django.core.mail import send_mail
+        # # send_mail(邮件主题, 普通邮件正文, 发件人邮箱, [收件人邮件], html_message='超文本邮件内容')
+        # send_mail('美多', '', '美多商城<itcast99@163.com>', [email], html_message='收钱了')
+        # verify_url = 'http://www.meiduo.site:8000/emails/verification/?token=2'
+        # verify_url = generate_verify_email_url(user)  # 生成邮箱激活url
+        # send_verify_email.delay(email, verify_url)
+
+        # 响应
+        return http.JsonResponse({'code': RETCODE.OK, 'errmsg': 'OK'})
 
 
