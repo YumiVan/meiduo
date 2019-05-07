@@ -39,9 +39,14 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    'haystack',#全文检索
+
     'users',#用户模块
     'oauth',#QQ模块
     'areas',#省市区模块
+    'contents',  # 首页
+    'goods',  # 商品
 
 
 ]
@@ -232,5 +237,33 @@ EMAIL_FROM = '美多商城<itcast99@163.com>' # 发件人抬头
 
 # 邮箱验证链接域名部分
 EMAIL_VERIFY_URL = 'http://www.meiduo.site:8000/emails/verification/'
+
+# 修改Django的文件存储类
+DEFAULT_FILE_STORAGE = 'meiduo_mall.utils.fastdfs.fdfs_storage.FastDFSStorage'
+FDFS_BASE_URL = 'http://192.168.206.137:8888/'  # FastDFS中sotrage(nginx) ip和端口
+
+
+
+#Haystack
+HAYSTACK_CONNECTIONS = {
+    'default': {
+        'ENGINE': 'haystack.backends.elasticsearch_backend.ElasticsearchSearchEngine',
+        'URL': 'http://192.168.206.137:9200/', # Elasticsearch服务器ip地址，端口号固定为9200
+        'INDEX_NAME': 'meiduo_mall', # Elasticsearch建立的索引库的名称
+    },
+}
+
+# 当添加、修改、删除数据时，自动生成索引
+HAYSTACK_SIGNAL_PROCESSOR = 'haystack.signals.RealtimeSignalProcessor'
+
+HAYSTACK_SEARCH_RESULTS_PER_PAGE = 5  # 搜索出来的数据每页显示多少条
+
+
+
+
+
+
+
+
 
 
