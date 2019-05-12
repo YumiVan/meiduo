@@ -17,8 +17,8 @@ urlpatterns = [
     url(r'^emails/$', views.EmailView.as_view()),
     # 激活邮箱
     url(r'^emails/verification/$', views.VerifyEmailView.as_view()),
-    # 用户收货地址
-    url(r'^addresses/$', views.AddressView.as_view()),
+    # 用户收货地址查询
+    url(r'^addresses/$', views.AddressView.as_view(),name='address'),
     # 用户新增收货地址
     url(r'^addresses/create/$', views.CreateAddressView.as_view()),
     # 用户收货地址修改和删除
@@ -28,7 +28,9 @@ urlpatterns = [
     # 修改用户地址标题
     url(r'^addresses/(?P<address_id>\d+)/title/$', views.UpdateTitleAddressView.as_view()),
     # 修改用户密码
-    url(r'^password/$', views.ChangePasswordView.as_view())
+    url(r'^password/$', views.ChangePasswordView.as_view()),
+    # 浏览记录
+    url(r'^browse_histories/$', views.UserBrowseHistory.as_view()),
 
 ]
 

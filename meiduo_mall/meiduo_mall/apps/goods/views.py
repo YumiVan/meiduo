@@ -2,9 +2,9 @@ from django.shortcuts import render
 from django.views import View
 from django import http
 from django.core.paginator import Paginator
-
+from django.utils import timezone
 from contents.utils import get_categories
-from .models import GoodsCategory,SKU
+from .models import GoodsCategory,SKU,GoodsVisitCount
 from .utils import get_breadcrumb
 from meiduo_mall.utils.response_code import RETCODE
 
@@ -122,12 +122,12 @@ class DetailView(View):
 
 
         """3.组合 并找到sku_id 绑定"""
-        spu_spec_qs = spu.specs.order_by('id')  # 获取当前spu中的所有规格
+        spu_spec_qs = spu.specs.order_by('id')  # 获取当前spu中的所有规格 <一个颜色一个内存>
 
         for index, spec in enumerate(spu_spec_qs):  # 遍历当前所有的规格
-            spec_option_qs = spec.options.all()  # 获取当前规格中的所有选项
+            spec_option_qs = spec.options.all()  # 获取当前规格中的所有选项 <有什么颜色>
             temp_option_ids = current_sku_option_ids[:]  # 复制一个新的当前显示商品的规格选项列表
-            for option in spec_option_qs:  # 遍历当前规格下的所有选项
+            for option in spec_option_qs:  # 遍历当前规格下的所有选项   <遍历颜色选项 有哪些颜色>
                 temp_option_ids[index] = option.id  # [8, 12]
                 option.sku_id = spec_sku_map.get(tuple(temp_option_ids))  # 给每个选项对象绑定下他sku_id属性
 
@@ -142,4 +142,35 @@ class DetailView(View):
             'spec_qs': spu_spec_qs,  # 当前商品的所有规格数据
         }
         return render(request, 'detail.html', context)
-        pass
+
+
+class DetailVisitView(View):
+    """商品类别每日访问量统计"""
+
+    def post(self, request, category_id):
+
+        try:
+            # 校验category_id 是否真实存在
+            category = GoodsCategory.objects.get(id=category_id)
+        except GoodsCategory.DoesNotExist:
+            return http.HttpResponseForbidden('商品类别不存在')
+
+        # 获取当前日期
+        today_date = timezone.localdate()
+        try:
+
+            # 查询当前类别今天没有没统计过  # 注意不要写成data了
+            count_data = GoodsVisitCount.objects.get(category=category, date=today_date)
+        except GoodsVisitCount.DoesNotExist:
+            # 如果当前类别今天是第一次来统计,就创建一个新记录,并给它指定是统计那一个类别
+            count_data = GoodsVisitCount(
+                category=category
+
+            )
+
+        count_data.count += 1  # 累加浏览量
+        count_data.save()
+
+
+        return http.JsonResponse({'code': RETCODE.OK, 'errmsg': "ok"})
+

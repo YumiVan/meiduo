@@ -1,20 +1,28 @@
 from django.shortcuts import render, redirect, reverse
 from django.views import View
 from django import http
-import re ,json
+from django.shortcuts import render, redirect, reverse
+from django.views import View
+from django import http
+import re, json
 from django.contrib.auth import login, authenticate, logout, mixins
 from django.db import DatabaseError
 from django_redis import get_redis_connection
 from django.conf import settings
+from django.contrib.auth.decorators import login_required
 
-from .utils import generate_verify_email_url ,check_token_to_user
-from .models import User,Address
+from .models import User, Address
 import logging
 from meiduo_mall.utils.response_code import RETCODE
-from django.contrib.auth.decorators import login_required
 from celery_tasks.email.tasks import send_verify_email
+from .utils import generate_verify_email_url, check_token_to_user
 from meiduo_mall.utils.views import LoginRequiredView
-logger = logging.getLogger('django')  # 创建日志输出器
+from goods.models import SKU
+from carts.utils import merge_cart_cookie_to_redis
+
+
+
+logger = logging.getLogger('Django')  # 创建日志输出器
 
 
 # Create your views here.
@@ -132,6 +140,8 @@ class LoginView(View):
 
         response = redirect(request.GET.get('next') or '/' )#创建响应对象
         response.set_cookie('username',user.username,max_age=60*60)
+        # 登陆成功那一刻合并购物车
+        merge_cart_cookie_to_redis(request, user, response)
         # 响应结果重定向到首页
         return response
 
@@ -503,6 +513,93 @@ class ChangePasswordView(LoginRequiredView):
         response.delete_cookie('username')
 
         return response
+
+
+class UserBrowseHistory(View):
+    """用户商品浏览记录"""
+
+    def post(self, request):
+
+        # 判断当前用户是否登录
+        user = request.user
+        if not user.is_authenticated:
+            return http.JsonResponse({'code': RETCODE.SESSIONERR, 'errmsg': '用户未登录'})
+
+        # 获取请求体中的sku_id
+        json_dict = json.loads(request.body.decode())
+        sku_id = json_dict.get('sku_id')
+
+        # 校验sku_id
+        try:
+            sku = SKU.objects.get(id=sku_id)
+        except SKU.DoesNotExist:
+            return http.HttpResponseForbidden('sku_id不存在')
+
+        # 创建redis连接对象
+        redis_conn = get_redis_connection('history')
+        pl = redis_conn.pipeline()
+
+        key = 'history_%s' % user.id
+        # 先去重
+        pl.lrem(key, 0, sku_id)
+
+        # 存储到列表的开头
+        pl.lpush(key, sku_id)
+
+        # 截取前5个
+        pl.ltrim(key, 0, 4)
+        # 执行管道
+        pl.execute()
+
+        # 响应
+        return http.JsonResponse({'code': RETCODE.OK, 'errmsg': 'OK'})
+
+
+    def get(self,request):
+        """浏览记录查询"""
+        # 创建redis连接对象
+        redis_conn = get_redis_connection('history')
+        sku_id_list = redis_conn.lrange('history_%s' % request.user.id, 0, -1)
+        # 获取当前登录用户的浏览记录列表数据 [sku_id1, sku_id2]
+
+        # 通过sku_id查询sku,再将sku模型转换成字典
+        # sku_qs = SKU.objects.filter(id__in=sku_id_list)  [b'3', b'2', b'5'] [2, 3, 5]
+        skus = []  # 用来装每一个sku字典
+        for sku_id in sku_id_list:
+            sku = SKU.objects.get(id=sku_id)
+            sku_dict = {
+                'id': sku.id,
+                'name': sku.name,
+                'default_image_url': sku.default_image.url,
+                'price': sku.price
+            }
+            skus.append(sku_dict)
+        # 响应
+        return http.JsonResponse({'code': RETCODE.OK, 'errmsg': 'OK', 'skus': skus})
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

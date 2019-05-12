@@ -11,6 +11,7 @@ import re
 from django_redis import get_redis_connection
 from users.models import User
 from .models import OAuthQQUser
+from carts.utils import merge_cart_cookie_to_redis
 # Create your views here.
 
 class OAuthURLView(View):
@@ -74,6 +75,8 @@ class OAuthUserView(View):
             # 直接登录成功:  状态保持
             response = redirect(state)
             response.set_cookie('username', user.username, max_age=settings.SESSION_COOKIE_AGE)
+            # 登陆成功那一刻合并购物车
+            merge_cart_cookie_to_redis(request, user, response)
             return response
 
         # return http.JsonResponse({'openid': openid})
@@ -137,4 +140,6 @@ class OAuthUserView(View):
 
         response = redirect(request.GET.get('state'))
         response.set_cookie('username', user.username, max_age=settings.SESSION_COOKIE_AGE)
+        # 登陆成功那一刻合并购物车
+        merge_cart_cookie_to_redis(request, user, response)
         return response
