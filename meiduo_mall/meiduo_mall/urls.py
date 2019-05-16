@@ -17,8 +17,11 @@ Including another URLconf
 from django.conf.urls import url,include
 from django.contrib import admin
 
+
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
+
+    url(r'^search/', include('haystack.urls')),  # 搜索模块
 
     url(r'^',include('users.urls',namespace='users')),#用户模块
 
@@ -32,7 +35,15 @@ urlpatterns = [
 
     url(r'^', include('goods.urls', namespace='goods')),  # 商品模块
 
-    url(r'^search/', include('haystack.urls')),  # 搜索模块
+    url(r'^', include('carts.urls', namespace='carts')),  # 购物车模块
+
+    url(r'^', include('payment.urls', namespace='payment')),  # 支付模块
+
+    url(r'^', include('orders.urls', namespace='orders')),  # 订单模块
 
 
 ]
+
+
+
+

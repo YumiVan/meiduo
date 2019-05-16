@@ -11,7 +11,6 @@
     <script type="text/javascript" src="/static/js/axios-0.18.0.min.js"></script>
     <script type="text/javascript" src="/static/js/jquery-1.12.4.min.js"></script>
 </head>
-<body>
 <div id="app" v-cloak>
     <div class="header_con">
         <div class="header">
@@ -46,6 +45,8 @@
             <form method="get" action="/search/" class="search_con">
                 <input type="text" class="input_text fl" name="q" placeholder="搜索商品">
                 <input type="submit" class="input_btn fr" name="" value="搜索">
+                <body><input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
             </form>
             <ul class="search_suggest fl">
                 <li><a href="#">索尼微单</a></li>
