@@ -21,6 +21,7 @@ from .utils import generate_verify_email_url, check_token_to_user
 from meiduo_mall.utils.views import LoginRequiredView
 from goods.models import SKU
 from carts.utils import merge_cart_cookie_to_redis
+from celery_tasks.sms.tasks import send_sms_code
 
 
 
@@ -620,32 +621,87 @@ class UserOrderInfoView(LoginRequiredView):
         return render(request, 'user_center_order.html', context)
 
 
+class FindPassword(View):
+    def get(self,request):
+        """找回密码界面"""
+        return render(request,'find_password.html')
+
+
+class FindPassword1(View):
+    """找回密码第一步"""
+    def get(self,request,username):
+        uuid=request.GET.get("image_code_id")
+        image_code_client = request.GET.get('text')
+        if not all([image_code_client, uuid]):
+            return http.JsonResponse({'code': RETCODE.NECESSARYPARAMERR, 'errmsg': '缺少必须参数'})
+        try:
+            user = User.objects.get(username =username)
+        except:
+            user = User.objects.get(mobile=username)
+        mobile =user.mobile
+        # 用名字做access_token
+        access_token = user.username,
+        return http.JsonResponse({"code":RETCODE.OK,"errmsg":"OK",'mobile': mobile,'access_token':access_token})
+
+
+class FindPassword2(View):
+    def get(self,request):
+        try:
+            username = request.GET.get('access_token')
+        except:
+            return http.JsonResponse({'code': RETCODE.NECESSARYPARAMERR, 'errmsg': '缺少必须参数'})
+        import random
+        sms_code = '%06d' % random.randint(0, 999999)
+        print(sms_code)
+        user = User.objects.get(username=username)
+        mobile = user.mobile
+        send_sms_code.delay(mobile, sms_code)
+
+        #短信存到redis
+        redis_coon = get_redis_connection('verify_code')
+        redis_coon.set('sms_%s' % mobile,sms_code)
+        return http.JsonResponse({'code': RETCODE.OK, 'errmsg': '发送短信成功'})
+
+class FindPassword2_1(View):
+    def get(self,request,username):
+        try:
+            user =User.objects.get(username=username)
+            sms_code= request.GET.get('sms_code')
+        except:
+            return http.JsonResponse({'code': RETCODE.NECESSARYPARAMERR, 'errmsg': '缺少必须参数'})
+        mobile = user.mobile
+        user_id = user.id
+        access_token = user.username
+        #校验
+        redis_coon = get_redis_connection('verify_code')
+        sms_code_redis = redis_coon.get('sms_%s' % mobile).decode()
+        if sms_code_redis == sms_code:
+            return http.JsonResponse({"code":RETCODE.OK,"errmsg":"OK",'user_id':user_id,'access_token':access_token})
+        return http.HttpResponse(status=400)
+
+class FindPassword3(View):
+    def post(self,request,user_id):
+        user = User.objects.get(id=user_id)
+        data = request.body.decode()
+        data = json.loads(data)
+        password=data.get('password')
+        password2=data.get('password2')
+        access_token= data.get('access_token')
+        if password != password2:
+            return http.JsonResponse({'code':RETCODE.CPWDERR,'errmsg':'密码不一致'})
+        #校验
+        access_token_user = User.objects.get(username=access_token)
+        if access_token_user!=user:
+            return http.JsonResponse({'errmsg':'数据错误'},status=400)
+        User.objects.filter(id=user_id).update(
+            password=password
+        )
+        # user.set_password(password)
+        # user.save()
 
 
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        return http.JsonResponse({'message':'ok'})
 

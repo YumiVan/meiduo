@@ -10,7 +10,7 @@ https://docs.djangoproject.com/en/1.11/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.11/ref/settings/
 """
-
+import datetime
 import os,sys
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -26,7 +26,7 @@ SECRET_KEY = '%j1ns8h_ud41j1rq(hhg$gnen5-r8@1_89x6%@3viax39%$d&%'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['www.meiduo.site']
+ALLOWED_HOSTS = ['*']
 
 sys.path.insert(0,os.path.join(BASE_DIR,'apps'))
 
@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
 
     'haystack',#全文检索
     'django_crontab',  # 定时器
@@ -50,6 +51,7 @@ INSTALLED_APPS = [
     'goods',  # 商品
     'orders',#订单
     'payment',#支付
+    'meiduo_admin'#后台
 
 
 ]
@@ -291,6 +293,27 @@ CRONJOBS = [
 
 CRONTAB_COMMAND_PREFIX = 'LANG_ALL=zh_cn.UTF-8'
 
+# 指定收集静态文件存放目录
+STATIC_ROOT = os.path.join(os.path.dirname(BASE_DIR), 'static')
+
+
+REST_FRAMEWORK = {
+    'EXCEPTION_HANDLER': 'meiduo_mall.utils.exceptions.exception_handler',
+
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        # 引入JWT认证机制，当客户端将jwt token传递给服务器之后
+        # 此认证机制会自动校验jwt token的有效性，无效会直接返回401(未认证错误)
+        'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
+    ),
+}
+
+# JWT扩展配置
+JWT_AUTH = {
+    # 设置生成jwt token的有效时间
+    'JWT_EXPIRATION_DELTA': datetime.timedelta(days=1),
+}
 
 
 

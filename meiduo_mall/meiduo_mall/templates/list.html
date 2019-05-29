@@ -42,7 +42,7 @@
     </div>
 
     <div class="search_bar clearfix">
-        <a href="/contents/migrations" class="logo fl"><img src="/static/images/logo.png"></a>
+        <a href="/" class="logo fl"><img src="/static/images/logo.png"></a>
         <div class="search_wrap fl">
             <form method="get" action="/search/" class="search_con">
                 <input type="text" class="input_text fl" name="q" placeholder="搜索商品">
@@ -143,6 +143,8 @@
                     <li>
                         <a href="/detail/{{ sku.id }}/"><img src="{{ sku.default_image.url }}"></a>
                         <h4><a href="/detail/{{ sku.id }}/">{{ sku.name }}</a></h4>
+{#                        <a href="/detail/{{ sku.id }}.html"><img src="{{ sku.default_image.url }}"></a>#}
+{#                        <h4><a href="/detail/{{ sku.id }}.html">{{ sku.name }}</a></h4>#}
                         <div class="operate">
                             <span class="price">￥{{ sku.price }}</span>
                             <span class="unit">台</span>

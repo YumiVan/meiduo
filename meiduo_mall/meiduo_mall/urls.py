@@ -14,7 +14,7 @@ Including another URLconf
     1. Import the include() function: from django.conf.urls import url, include
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
-from django.conf.urls import url,include
+from django.conf.urls import url, include
 from django.contrib import admin
 
 
@@ -41,6 +41,7 @@ urlpatterns = [
 
     url(r'^', include('orders.urls', namespace='orders')),  # 订单模块
 
+    url(r'^meiduo_admin/', include('meiduo_admin.urls')),  # 后台模块
 
 ]
 

@@ -33,6 +33,16 @@ urlpatterns = [
     url(r'^browse_histories/$', views.UserBrowseHistory.as_view()),
     # 用户全部订单
     url(r'^orders/info/(?P<page_num>\d+)/$', views.UserOrderInfoView.as_view()),
+    #密码找回界面
+    url(r'^find_password/$', views.FindPassword.as_view(),name='find_password'),
+    #密码找回第一步
+    url(r'^accounts/(?P<username>[a-zA-Z0-9_-]{5,20})/sms/token/$', views.FindPassword1.as_view()),
+    #密码找回第二步
+    url(r'^sms_codes/$', views.FindPassword2.as_view()),
+    #找回密码第二步2-1
+    url(r'^accounts/(?P<username>[a-zA-Z0-9_-]{5,20})/password/token/$', views.FindPassword2_1.as_view()),
+    #找回密码第三步
+    url(r'^users/(?P<user_id>\d+)/password/$', views.FindPassword3.as_view()),
 ]
 
 

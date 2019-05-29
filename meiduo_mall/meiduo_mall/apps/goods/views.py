@@ -79,6 +79,7 @@ class HotGoodsView(View):
                 'default_image_url': sku.default_image.url
             })
 
+
         return http.JsonResponse({'code': RETCODE.OK, 'errmsg': 'OK', 'hot_skus': hot_skus})
 
 
