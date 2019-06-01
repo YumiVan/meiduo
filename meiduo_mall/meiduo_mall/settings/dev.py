@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'corsheaders',
 
     'haystack',#全文检索
     'django_crontab',  # 定时器
@@ -57,6 +58,8 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    # cors中间键放在第一个
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -99,7 +102,7 @@ DATABASES = {
         'PORT': 3306, # 数据库端口
         'USER': 'root', # 数据库用户名
         'PASSWORD': 'mysql', # 数据库用户密码
-        'NAME': 'meiduo' # 数据库名字
+        'NAME': 'meiduo_mall' # 数据库名字
     },
 }
 
@@ -261,6 +264,9 @@ EMAIL_VERIFY_URL = 'http://www.meiduo.site:8000/emails/verification/'
 DEFAULT_FILE_STORAGE = 'meiduo_mall.utils.fastdfs.fdfs_storage.FastDFSStorage'
 FDFS_BASE_URL = 'http://192.168.206.137:8888/'  # FastDFS中sotrage(nginx) ip和端口
 
+# fdfs的访问域名
+FDFS_URL = 'http://image.meiduo.site:8888/'
+FDFS_CLIENT_CONF = os.path.join(BASE_DIR, 'utils/fastdfs/client.conf')
 
 
 #Haystack
@@ -307,6 +313,8 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.SessionAuthentication',
         'rest_framework.authentication.BasicAuthentication',
     ),
+    # 设置DRF框架全局分页类
+    'DEFAULT_PAGINATION_CLASS': 'meiduo_admin.utils.pagination.StandardResultPagination'
 }
 
 # JWT扩展配置
@@ -315,10 +323,12 @@ JWT_AUTH = {
     'JWT_EXPIRATION_DELTA': datetime.timedelta(days=1),
 }
 
-
-
-
-
+# CORS跨域请求设置
+CORS_ORIGIN_WHITELIST = (
+    # 备注：允许源地址`127.0.0.1:8080`向当前API服务器发起跨域请求
+    'http://127.0.0.1:8080',
+)
+CORS_ALLOW_CREDENTIALS = True  # 允许携带cookie
 
 
 

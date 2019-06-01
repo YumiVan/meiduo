@@ -39,6 +39,7 @@ class GoodsChannel(BaseModel):
     sequence = models.IntegerField(verbose_name='组内顺序')
 
     class Meta:
+        ordering= ['id']
         db_table = 'tb_goods_channel'
         verbose_name = '商品频道'
         verbose_name_plural = verbose_name
@@ -100,6 +101,7 @@ class SKU(BaseModel):
     default_image = models.ImageField(max_length=200, default='', null=True, blank=True, verbose_name='默认图片')
 
     class Meta:
+        ordering = ['id']
         db_table = 'tb_sku'
         verbose_name = '商品SKU'
         verbose_name_plural = verbose_name
@@ -114,6 +116,7 @@ class SKUImage(BaseModel):
     image = models.ImageField(verbose_name='图片')
 
     class Meta:
+        ordering = ['id']
         db_table = 'tb_sku_image'
         verbose_name = 'SKU图片'
         verbose_name_plural = verbose_name
@@ -149,7 +152,8 @@ class SpecificationOption(BaseModel):
     def __str__(self):
         return '%s - %s' % (self.spec, self.value)
 
-
+# sku = SKU.objects.get(id=1)
+# sku.specs
 class SKUSpecification(BaseModel):
     """SKU具体规格"""
     sku = models.ForeignKey(SKU, related_name='specs', on_delete=models.CASCADE, verbose_name='sku')

@@ -10,6 +10,7 @@ class User(AbstractUser):
     email_active = models.BooleanField(default=False, verbose_name='邮箱激活状态')
     default_address = models.ForeignKey('Address', related_name='users', null=True, blank=True,on_delete=models.SET_NULL, verbose_name='默认地址')
     class Meta:
+        ordering =['id']
         db_table = 'tb_users'
         verbose_name= '用户'
         verbose_name_plural= verbose_name
