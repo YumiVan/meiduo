@@ -4,8 +4,8 @@ from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
-from goods.models import SKUImage, SKU
-from meiduo_admin.serializers.skus import SKUImageSerializer, SKUSimpleSerializer, SKUSerializer
+from goods.models import SKUImage, SKU, GoodsCategory
+from meiduo_admin.serializers.skus import SKUImageSerializer, SKUSimpleSerializer, SKUSerializer, SKUCategorySerializer
 
 
 class SKUImageViewSet(ModelViewSet):
@@ -94,3 +94,20 @@ class SKUViewSet(ModelViewSet):
     #     qs = self.get_queryset()
     #     serializer = self.get_serializer(qs, many=True)
     #     return Response(serializer.data)
+
+# GET /meiduo_admin/skus/categories/
+class SKUCategoriesView(ListAPIView):
+    permission_classes = [IsAdminUser]
+    queryset = GoodsCategory.objects.filter(subs=None)
+
+    serializer_class = SKUCategorySerializer
+
+    # 注：关闭分页
+    pagination_class = None
+
+    # def get(self, request):
+    #     # return self.list(request)
+    #     qs = self.get_queryset()
+    #     serializer = self.get_serializer(qs, many=True)
+    #     return Response(serializer.data)
+

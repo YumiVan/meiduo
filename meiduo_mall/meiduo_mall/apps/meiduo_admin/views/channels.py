@@ -36,10 +36,7 @@ class ChannelViewSet(ModelViewSet):
     #     serializer = self.get_serializer(instance)
     #     return Response(serializer.data)
 
-    # def retrieve(self, request, *args, **kwargs):
-    #     instance = self.get_object()
-    #     serializer = self.get_serializer(instance)
-    #     return Response(serializer.data)
+
 
     # def update(self, request, *args, **kwargs):
     #     instance = self.get_object()

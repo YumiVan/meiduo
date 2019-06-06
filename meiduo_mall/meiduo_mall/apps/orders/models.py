@@ -39,6 +39,7 @@ class OrderInfo(BaseModel):
     status = models.SmallIntegerField(choices=ORDER_STATUS_CHOICES, default=1, verbose_name="订单状态")
 
     class Meta:
+        ordering = ['order_id']
         db_table = "tb_order_info"
         verbose_name = '订单基本信息'
         verbose_name_plural = verbose_name

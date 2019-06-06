@@ -38,6 +38,7 @@ class AdminAuthSerializer(serializers.ModelSerializer):
             if not user.check_password(password):
                 raise serializers.ValidationError('用户名或密码错误')
 
+
         # 在attrs中添加user
         attrs['user'] = user
 
